@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RPS Multiplayer</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="./assets/css/style.css">
+
+  <script
+    src="https://code.jquery.com/jquery-3.1.1.min.js"
+    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+    crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/3.7.0/firebase.js"></script>
+</head>
+
+<body>
+
+<div class="container-fluid">
+
+  <div class="row" id="title">
+    <div class="col-sm-8 col-sm-offset-2 text-center">
+      <h1>RPS: SCISSORS PAPER ROCK</h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2 text-center">
+      <div class="form-inline" id="name-entry">
+        <label for="name-input">Name?</label>
+        <input type="text" class="form-control" id="name-input" placeholder="Enter name here">
+        <button id="submit-name" class="btn btn-default">Submit</button>
+      </div>
+      <div id="game-text" class="hidden">
+        <h2 id="game-text-display"></h2>
+      </div>
+    </div>
+    <br>
+  </div>
+
+  <div class="row" id="game-field">
+    <div id="player1" class="col-sm-4 text-center game-field-box">
+      <h3 id="player1-name">Waiting for Player 1</h2>
+
+      <div id="player1-display" class="hidden">
+        <div id="player1-choices">
+          <h3 classs="player-choice" data-choice="1">Rock</h3>
+          <h3 classs="player-choice" data-choice="2">Paper</h3>
+          <h3 classs="player-choice" data-choice="3">Scissors</h3>
+        </div>
+
+        <div id="player1-selection" class="hidden">
+          <h2 id="player1-selection-text"></h2>
+        </div>
+      </div>
+
+      <div id="player1-stats" class="hidden">
+        <p>Wins: <span id="player1-wins">0</span> Loses: <span id="player1-losses"></span></p>
+      </div>
+    </div>
+
+    <div id="result" class="col-sm-4 text-center game-field-box">
+      <h2 id="game-result"></h2>
+    </div>
+
+    <div id="player2" class="col-sm-4 text-center game-field-box">
+      <h3 id="player2-name">Waiting for Player 2</h2>
+
+      <div id="player2-display" class="hidden">
+        <div id="player2-choices">
+          <h3 classs="player-choice" data-choice="1">Rock</h3>
+          <h3 classs="player-choice" data-choice="2">Paper</h3>
+          <h3 classs="player-choice" data-choice="3">Scissors</h3>
+        </div>
+
+        <div id="player2-selection" class="hidden">
+          <h2 id="player2-selection-text"></h2>
+        </div>
+      </div>
+
+      <div id="player2-stats" class="hidden">
+        <p>Wins: <span id="player1-wins">0</span> Loses: <span id="player1-losses"></span></p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row" id="chat-field">
+    <div class="col-sm-10 col-sm-offset-1">
+      <div class="form-group">
+        <label for="chat-box">Chat History</label>
+        <div id="chat-box"></div>
+      </div>
+      <div class="form-inline">
+        <input type="text" class="form-control" id="chat-message" placeholder="Enter message here">
+        <button id="send-message" class="btn btn-default">Send</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+  
+</body>
+
+  <script src="./assets/javascript/game.js"></script>
+
+</html>

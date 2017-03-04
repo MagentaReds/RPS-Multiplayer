@@ -1,0 +1,9 @@
+.game-field-box {
+  height: 300px;
+  border: 1px solid black;
+}
+
+#chat-box {
+  overflow: auto;
+  height: 200px;
+}
