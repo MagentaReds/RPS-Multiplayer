@@ -42,9 +42,31 @@ var rps_game = {
   lastGameState: gameStates.waitingForPlayers,
   gameState: gameStates.waitingForPlayers,
 
-
+  //set reset the game
   initialize: function(){
+    this.player1.name="";
+    this.player1.choice=0;
+    this.player1.wins=0;
+    this.player1.losses=0;
+    this.player1.joined=false;
+    this.player1.picked=false;
 
+    this.player2.name="";
+    this.player2.choice=0;
+    this.player2.wins=0;
+    this.player2.losses=0;
+    this.player2.joined=false;
+    this.player2.picked=false;
+
+    this.player=null;
+    this.playerMode: playerModes.spectator;
+
+    if(this.chat_ref_delete!==null){
+      this.chat_ref_delete.cancel();
+      this.chat_ref_delete=null;
+    }
+
+    this.gameState= gameStates.waitingForPlayers;
   },
 
   selectChoice: function(choice) {
@@ -63,11 +85,20 @@ var rps_game = {
 
   },
 
-  updatePlayer1: function(snapshot) {
+  updatePlayer: function(snapshot) {
+    var val=snapshot.val();
+    var tempPlayer=null;
+    if(snapshot.key==="1")
+      tempPlayer=this.player1;
+    else 
+      tempPlayer=this.player2;
 
-  },
-
-  updatePlayer2: function(snapshot) {
+    tempPlayer.name=val.name;
+    tempPlayer.choice=val.choice;
+    if(val.choice!==0)
+      tempPlayer.picked=true;
+    tempPlayer.wins=val.wins;
+    tempPlayer.losses=val.losses;
 
   },
 
@@ -82,6 +113,8 @@ var rps_game = {
 
 
 $(document).ready(function(){
+
+  rps_game.initialize();
 
   $(".player-choice").on("click", function(event){
     rps_game.selectChoice($(this).attr("data-choice"));
@@ -112,13 +145,13 @@ $(document).ready(function(){
 
   database.ref("player/1").on("value", function(snapshot){
       if(snapshot.exists())
-        rps_game.updatePlayer1(snapshot);
+        rps_game.updatePlayer(snapshot);
     }, function(errObject){
       console.log("Errors handled: " + errObject.code);
   });
   database.ref("player/2").on("value", function(snapshot){
       if(snapshot.exists())
-        rps_game.updatePlayer2(snapshot);
+        rps_game.updatePlayer(snapshot);
     }, function(errObject){
       console.log("Errors handled: " + errObject.code);
   });
@@ -130,7 +163,6 @@ $(document).ready(function(){
   });
 
 
-  rps_game.initialize();
   console.log("Script loaded succsesfuly")
 
 });
