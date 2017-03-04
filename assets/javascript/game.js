@@ -16,7 +16,7 @@ const gameStates={
   gameLoaded: "The game has loaded"
 };
 
-const playerMode={
+const playerModes={
   none: "none",
   one: "player1",
   two: "player2",
@@ -45,7 +45,8 @@ var database=firebase.database();
 
 var rps_game = {
   name: null,
-  player: playerMode.spectator,
+  playerMode: playerModes.spectator,
+  player: null,
   player1: {
       name: "",
       choice: 0,
@@ -77,7 +78,7 @@ var rps_game = {
   },
 
   displayChoices: function(){
-    var playerStr=this.player;
+    var playerStr=this.playerMode;
     $("#"+playerStr+"-display").removeClass("hidden");
   },
 
@@ -91,7 +92,7 @@ var rps_game = {
         case gameStates.waitingForPlayers: //we get here because We were probably waiting for playerchoices, so we need to clean up the board of then player who left
           //the removePlayer function already does most of this work
           //but we need to set us to remove the chat if we also disconnect
-          if(this.player!==playerMode.spectator){
+          if(this.playerMode!==playerModes.spectator){
             this.chat_ref_delete=this.chat_ref.onDisconnect();
             this.chat_ref_delete.remove();
           }
@@ -100,7 +101,7 @@ var rps_game = {
           //we get here cause we have both players waiting, so we need to display/redisplay
           //the chices for the user to pick again, also since both poeopler are here,
           //we'll cancel the chat_ref.disconnect cause we don't know who will disconnect first.
-          if(this.player!==playerMode.spectator){
+          if(this.playerMode!==playerModes.spectator){
             this.displayChoices();
             this.chat_ref_delete.cancel();
           }
@@ -135,7 +136,7 @@ var rps_game = {
 
   //set up page for spectator view
   spectatorSetup: function() {
-    this.player=playerMode.spectator;
+    this.playerMode=playerModes.spectator;
     $("#name-entry").addClass("hidden");
   },
 
@@ -148,7 +149,7 @@ var rps_game = {
     var temp=null;
     var playerStr=null;
 
-    if(whichPlayer===playerMode.one){
+    if(whichPlayer===playerModes.one){
       temp=this.player1;
       playerStr="player1";
     }
@@ -168,7 +169,7 @@ var rps_game = {
     var temp=null;
     var playerStr=null;
 
-    if(whichPlayer===playerMode.one){
+    if(whichPlayer===playerModes.one){
       temp=this.player1;
       playerStr="player1";
     }
@@ -184,16 +185,16 @@ var rps_game = {
   displayYouJoined: function(){
     $("#name-entry").addClass("hidden");
     $("#game-text").removeClass("hidden");
-    $("#game-text-display").text("Welcome, "+this.name+"! You are "+this.player);
+    $("#game-text-display").text("Welcome, "+this.name+"! You are "+this.playerMode);
 
-    this.displayPlayer(this.player);
+    this.displayPlayer(this.playerMode);
   },
 
   //called when person submits their name
   joinGame: function(nameNew) {
     //console.log(nameNew);
     if(this.player1.joined===false) {
-      this.player=playerMode.one;
+      this.playerMode=playerModes.one;
       this.player1.joined = true;
       this.name=nameNew;
 
@@ -206,7 +207,7 @@ var rps_game = {
       this.player_ref.onDisconnect().remove();
     }
     else if(this.player2.joined===false) {
-      this.player=playerMode.two;
+      this.playerMode=playerModes.two;
       this.player2.joined = true;
       this.name=nameNew;
 
@@ -234,11 +235,11 @@ var rps_game = {
     var playerwhich= null;
     if(snapshot.key==="1"){
       temp=this.player1; 
-      playerwhich=playerMode.one;
+      playerwhich=playerModes.one;
     }
     else {
       temp=this.player2;
-      playerwhich=playerMode.two;
+      playerwhich=playerModes.two;
     }
 
     temp.joined=true;
@@ -258,14 +259,14 @@ var rps_game = {
 
     if(snapshot.key==="1"){
       temp=this.player1; 
-      playerwhich=playerMode.one;
+      playerwhich=playerModes.one;
     }
     else {
       temp=this.player2;
-      playerwhich=playerMode.two;
+      playerwhich=playerModes.two;
     }
 
-    if(this.player!==playerMode.spectator) {
+    if(this.playerMode!==playerModes.spectator) {
       var quitStr=temp.name+" has disconnected";
       this.chat_ref.push({message: quitStr});
     }
@@ -281,7 +282,7 @@ var rps_game = {
 
   selectChoice: function(choiceNum) {
     var tempPlayer=null;
-    if(this.player===playerMode.one)
+    if(this.playerMode===playerModes.one)
       tempPlayer=this.player1;
     else
       tempPlayer=this.player2;
@@ -289,8 +290,8 @@ var rps_game = {
     tempPlayer.choice=choiceNum;
     tempPlayer.picked=true;
 
-    $("#"+this.player+"-choices").addClass("hidden");
-    $("#"+this.player+"-selection").removeClass("hidden");
+    $("#"+this.playerMode+"-choices").addClass("hidden");
+    $("#"+this.playerMode+"-selection").removeClass("hidden");
 
     var tempObject = {
       name: tempPlayer.name,
@@ -325,11 +326,11 @@ var rps_game = {
 
     if(player===1) {
       tempPlayer=this.player1;
-      playerStr=playerMode.one;
+      playerStr=playerModes.one;
     }
     else {
       tempPlayer=this.player2;
-      playerStr=playerMode.two;
+      playerStr=playerModes.two;
     }
 
     $("#"+playerStr+"-name").text(tempPlayer.name);
