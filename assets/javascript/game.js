@@ -45,7 +45,7 @@ var database=firebase.database();
 
 var rps_game = {
   name: null,
-  player: playerMode.none,
+  player: playerMode.spectator,
   player1: {
       name: "",
       choice: 0,
@@ -66,8 +66,8 @@ var rps_game = {
   chat_ref: database.ref("chat"),
   chat_ref_delete: null,
   choice: 0,
-  lastGameState: gameStates.gameLoaded,
-  gameState: gameStates.gameLoaded,
+  lastGameState: gameStates.waitingForPlayers,
+  gameState: gameStates.waitingForPlayers,
 
   //called with a snapshot of the root in firebase
   //set's player to -1 (spectator) if both players are already taken up
@@ -91,15 +91,19 @@ var rps_game = {
         case gameStates.waitingForPlayers: //we get here because We were probably waiting for playerchoices, so we need to clean up the board of then player who left
           //the removePlayer function already does most of this work
           //but we need to set us to remove the chat if we also disconnect
-          this.chat_ref_delete=this.chat_ref.onDisconnect();
-          this.chat_ref_delete.remove();
+          if(this.player!==playerMode.spectator){
+            this.chat_ref_delete=this.chat_ref.onDisconnect();
+            this.chat_ref_delete.remove();
+          }
           break;
         case gameStates.waitingForPlayerChoices:
           //we get here cause we have both players waiting, so we need to display/redisplay
           //the chices for the user to pick again, also since both poeopler are here,
           //we'll cancel the chat_ref.disconnect cause we don't know who will disconnect first.
-          this.displayChoices();
-          this.chat_ref_delete.cancel();
+          if(this.player!==playerMode.spectator){
+            this.displayChoices();
+            this.chat_ref_delete.cancel();
+          }
           break;
         case gameStates.displayResults:
           //We'll display the turn results for a bit, then after a timeout, go on to next round
@@ -192,6 +196,10 @@ var rps_game = {
       this.player=playerMode.one;
       this.player1.joined = true;
       this.name=nameNew;
+
+      this.chat_ref_delete=this.chat_ref.onDisconnect();
+      this.chat_ref_delete.remove();
+
       this.player_ref=database.ref("player/1");
       this.player_ref.set({name: nameNew, choice: "None", wins: 0, losses: 0});
       var quitStr=nameNew+" has disconnected.";
@@ -201,6 +209,10 @@ var rps_game = {
       this.player=playerMode.two;
       this.player2.joined = true;
       this.name=nameNew;
+
+      this.chat_ref_delete=this.chat_ref.onDisconnect();
+      this.chat_ref_delete.remove();
+
       this.player_ref=database.ref("player/2");
       this.player_ref.set({name: nameNew, choice: "None", wins: 0, losses: 0});
       var quitStr=nameNew+" has disconnected.";
@@ -209,6 +221,7 @@ var rps_game = {
     else {
       alert("Game is full, sorry");
     }
+
 
 
     this.displayYouJoined();
@@ -252,6 +265,11 @@ var rps_game = {
       playerwhich=playerMode.two;
     }
 
+    if(this.player!==playerMode.spectator) {
+      var quitStr=temp.name+" has disconnected";
+      this.chat_ref.push({message: quitStr});
+    }
+
     temp.joined=false;
     temp.name="";
     temp.losses=0;
@@ -262,14 +280,63 @@ var rps_game = {
   },
 
   selectChoice: function(choiceNum) {
+    var tempPlayer=null;
+    if(this.player===playerMode.one)
+      tempPlayer=this.player1;
+    else
+      tempPlayer=this.player2;
 
+    tempPlayer.choice=choiceNum;
+    tempPlayer.picked=true;
+
+    $("#"+this.player+"-choices").addClass("hidden");
+    $("#"+this.player+"-selection").removeClass("hidden");
+
+    var tempObject = {
+      name: tempPlayer.name,
+      choice: tempPlayer.choice,
+      wins: tempPlayer.wins,
+      losses: tempPlayer.losses
+    };
+    this.player_ref.set(tempObject);
+
+    this.checkGameState();
   },
 
-  updatePlayerInfo: function(player) {
+  updatePlayerInfo: function(player, val) {
+    var tempPlayer=null;
+    if(player===1)
+      tempPlayer=this.player1;
+    else
+      tempPlayer=this.player2;
+
+    tempPlayer.name=val.name;
+    tempPlayer.choice=val.choice;
+    tempPlayer.wins=val.wins;
+    tempPlayer.losses=val.losses;
+
+    this.checkGameState();
 
   },
 
   updatePlayerDisplay: function(player){
+    var tempPlayer=null;
+    var playerStr=null;
+
+    if(player===1) {
+      tempPlayer=this.player1;
+      playerStr=playerMode.one;
+    }
+    else {
+      tempPlayer=this.player2;
+      playerStr=playerMode.two;
+    }
+
+    $("#"+playerStr+"-name").text(tempPlayer.name);
+    $("#"+playerStr+"--selection-text").text(choiceArray[tempPlayer.choice]);
+    $("#"+playerStr+"-wins").text(tempPlayer.wins);
+    $("#"+playerStr+"-losses").text(tempPlayer.losses);
+
 
   },
 
@@ -288,13 +355,14 @@ var rps_game = {
 
   //called via firebase listener on(value) for ref(player/1)
   updatePlayer1: function(snapshot){
-
-    console.log("Execution context is ok");
+    this.updatePlayerInfo(1, snapshot.val());
+    this.updatePlayerDisplay(1);
   },
 
   //called via firebase listener on(value) for ref(player/2)
   updatePlayer2: function(snapshot){
-
+    this.updatePlayerInfo(2, snapshot.val());
+    this.updatePlayerDisplay(2);
   },
 
   //called via firebase listener on(child_added) for ref(chat)
@@ -348,6 +416,7 @@ function tests() {
 $(document).ready(function(){
 
   $(".player-choice").on("click", function(event){
+    console.log("WE BEING CLICKED");
     rps_game.selectChoice($(this).attr("data-choice"));
   });
 
@@ -374,6 +443,18 @@ $(document).ready(function(){
       console.log("Errors handled: " + errObject.code);
   });
 
+  database.ref("player/1").on("value", function(snapshot){
+      if(snapshot.exists())
+        rps_game.updatePlayer1(snapshot);
+    }, function(errObject){
+      console.log("Errors handled: " + errObject.code);
+  });
+  database.ref("player/2").on("value", function(snapshot){
+      if(snapshot.exists())
+        rps_game.updatePlayer2(snapshot);
+    }, function(errObject){
+      console.log("Errors handled: " + errObject.code);
+  });
 
   database.ref("chat").on("child_added", function(snapshot){
       rps_game.addChatMessage(snapshot.val().message);
