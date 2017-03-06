@@ -7,10 +7,12 @@ $(document).ready(function(){
   });
 
   $("#submit-name").on("click", function(event){
+    event.preventDefault();
     rps_game.joinGame($("#name-input").val().trim());
   });
 
   $("#send-message").on("click", function(event){
+    event.preventDefault();
     rps_game.sendMessage($("#chat-message").val().trim());
     $("#chat-message").val("");
   });

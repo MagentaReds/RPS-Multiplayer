@@ -25,11 +25,13 @@
   </div>
 
   <div class="row">
-    <div class="col-sm-8 col-sm-offset-2 text-center">
+    <div id="name-game-text" class="col-sm-8 col-sm-offset-2 text-center">
       <div class="form-inline" id="name-entry">
-        <label for="name-input">Name?</label>
-        <input type="text" class="form-control" id="name-input" placeholder="Enter name here">
-        <button id="submit-name" class="btn btn-default">Submit</button>
+        <form>
+          <label for="name-input">Name?</label>
+          <input type="text" class="form-control" id="name-input" placeholder="Enter name here">
+          <button id="submit-name" class="btn btn-default">Submit</button>
+        </form>
       </div>
       <div id="game-text" class="hidden">
         <h2 id="game-text-display"></h2>
@@ -39,13 +41,16 @@
   </div>
 
   <div class="row" id="game-field">
-    <div id="player1" class="col-sm-4 text-center game-field-box">
+    <div id="player1" class="col-sm-3 col-sm-offset-1 text-center game-field-box">
       <h3 id="player1-name">Waiting for Player 1</h2>
 
       <div id="player1-display" class="hidden">
         <div id="player1-choices" class="hidden">
+          <br>
           <button class="btn btn-primary player-choice" data-choice="1">Rock</button>
+          <br><br>
           <button class="btn btn-primary player-choice" data-choice="2">Paper</button>
+          <br><br>
           <button class="btn btn-primary player-choice" data-choice="3">Scissors</button>
         </div>
 
@@ -59,17 +64,20 @@
       </div>
     </div>
 
-    <div id="result" class="col-sm-4 text-center game-field-box">
+    <div id="result" class="col-sm-2 col-sm-offset-1 text-center game-field-box">
       <h2 id="game-result" class="hidden">This is a Placeholder</h2>
     </div>
 
-    <div id="player2" class="col-sm-4 text-center game-field-box">
+    <div id="player2" class="col-sm-3 col-sm-offset-1 text-center game-field-box">
       <h3 id="player2-name">Waiting for Player 2</h2>
 
       <div id="player2-display" class="hidden">
         <div id="player2-choices" class="hidden">
+          <br>
           <button class="btn btn-primary player-choice" data-choice="1">Rock</button>
+          <br><br>
           <button class="btn btn-primary player-choice" data-choice="2">Paper</button>
+          <br><br>
           <button class="btn btn-primary player-choice" data-choice="3">Scissors</button>
         </div>
 
@@ -85,16 +93,18 @@
 
   </div>
 
+  <br><br>
+
   <div class="row" id="chat-field">
     <div class="col-sm-10 col-sm-offset-1">
       <div class="form-group">
         <label for="chat-box">Chat History</label>
         <div id="chat-box"></div>
       </div>
-      <div class="form-inline">
+      <form class="form-inline">
         <input type="text" class="form-control" id="chat-message" placeholder="Enter message here">
         <button id="send-message" class="btn btn-default">Send</button>
-      </div>
+      </form>
     </div>
   </div>
 

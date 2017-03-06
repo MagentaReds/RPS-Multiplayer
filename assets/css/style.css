@@ -1,9 +1,37 @@
+body {
+  background-color: pink;
+}
+
 .game-field-box {
   height: 300px;
   border: 1px solid black;
+  background-color: white;
 }
 
 #chat-box {
   overflow: auto;
   height: 200px;
+  background-color: white;
+}
+
+#player2, #player1 {
+  position: relative;
+}
+
+#player1-stats, #player2-stats {
+  position: absolute;
+  bottom: 0px;
+  left: calc(50% - 4em);
+}
+
+#name-game-text {
+  height: 100px;
+}
+
+#send-message{
+  width: 4em;
+}
+
+#chat-message {
+  width: calc(100% - 4.5em);
 }
