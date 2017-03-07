@@ -17,7 +17,7 @@ Firebase Diagram
   chat:
     firebaseid1:
       message: "Message Text"
-    firebaseid1:
+    firebaseid2:
       message: "Message Text Later"
   player:
     1:
