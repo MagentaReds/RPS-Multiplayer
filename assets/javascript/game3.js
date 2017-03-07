@@ -1,3 +1,6 @@
+//main game object and logic
+//Like the player object, each member variable and method that stars with "jq" designates it as using jQuery
+//jQuery is not used inside any other object method to keep things seperated.
 var rps_game = {
   player1: null,
   player2: null,
@@ -10,10 +13,10 @@ var rps_game = {
   gameState: gameStates.waitingForPlayers,
   windowMode: windowModes.spectator,
 
-  //set reset the game
+  //set/reset the game
   initialize: function(){
-    this.player1= new player("", 1);
-    this.player2= new player("", 2);
+    this.player1= new Player("", 1);
+    this.player2= new Player("", 2);
 
     this.player=null;
     this.enemy=null;
@@ -29,6 +32,7 @@ var rps_game = {
     this.gameState= gameStates.waitingForPlayers;
   },
 
+  //Compares player1's and player2's picks, to determine a winner
   computeResults: function(){
     var result=this.player1.choice-this.player2.choice;
     if(result<0)
@@ -49,6 +53,7 @@ var rps_game = {
 
   },
 
+  //After the results have been displayed, move on to the next round
   nextRound: function() {
 
     this.jqHideResults();
@@ -67,6 +72,8 @@ var rps_game = {
     
   },
 
+  //Checks the gamestate as it is currently, then calls changeGameState helper function to do logic based on the gamestate.
+  //This is called everytime rps_game get's an update from Firebase for one of the players.
   checkGameState: function() {
     var playersHere=this.player1.joined && this.player2.joined;
     var playersPicked=this.player1.picked && this.player2.picked;
@@ -79,15 +86,17 @@ var rps_game = {
     else if(!playersHere)
       tempGameState=gameStates.waitingForPlayers;
 
-    console.log("Check games state tempGameState="+tempGameState);
+    //console.log("Check games state tempGameState="+tempGameState);
     this.changeGameState(tempGameState);
   },
 
+  //If the gameState that was sent from checkGameState is different than the previous gameState, then we change to that new gameState.
+  //Do stuff based on new gameState
   changeGameState: function(state){
     if(state!==this.gameState){
       this.lastGameState=this.gameState;
       this.gameState=state;
-      console.log(this.lastGameState +" ++TO++ "+this.gameState);
+      //console.log(this.lastGameState +" ++TO++ "+this.gameState);
 
       switch(state) {
         case gameStates.waitingForPlayers: //we get here because We were probably waiting for playerchoices, so we need to clean up the board of then player who left
@@ -127,8 +136,10 @@ var rps_game = {
     }
   },
 
+  //Checks the player state of the given player and does logic based on what it is.
+  //This is called everytime this player's firebase data is changed, so we need to make our local data match firebase's
   checkPlayerState: function(plyr, playerRef) {
-    console.log("Check Player State: Player "+plyr+" state= "+playerRef.state);
+    //console.log("Check Player State: Player "+plyr+" state= "+playerRef.state);
     playerRef.jqUpdateStats();
 
     if(playerRef.state===playerStates.justLeft){
@@ -152,46 +163,48 @@ var rps_game = {
     }
     else  {
       playerRef.state=playerStates.justPicked;
-      playerRef.jqDisplaySelection();
+      if(this.windowMode!==windowModes.spectator)
+        playerRef.jqDisplaySelection();
     }
 
   },
 
-
+  //Display each player's Choice
   jqDisplayAllPicked: function(){
     this.player1.jqDisplaySelection(true);
     this.player2.jqDisplaySelection(true);
   },
-
+  //Changes game-result text.
   jqUpdateResultText: function(str){
     $("#game-result").text(str);
   },
-
+  //Unhides the game-result element
   jqDisplayResults: function() {
     $("#game-result").removeClass("hidden");
   },
-
+  //Rehides the game-result element
   jqHideResults: function() {
     $("#game-result").addClass("hidden");
   },
-
+  //Hide's all player's choice buttons
   jqHideAllSelections: function(){
     $("#player1-selection").addClass("hidden");
     $("#player2-selection").addClass("hidden");
   },
-
+  //Hides name entry form, and displays joined message at top of page
   jqJoinGameDisplay: function(){
     $("#name-entry").addClass("hidden");
     $("#game-text-display").text("Welcome "+this.player.name+"!  You are Player "+this.player.playerNumber+".");
     $("#game-text").removeClass("hidden");
   },
-
+  //This page's User has selected a choice.
   selectChoice: function(choice) {
     this.player.choice=choice;
     this.player.state=playerStates.justPicked;
     this.player_ref.set({name: this.player.name, choice: this.player.choice, wins: this.player.wins, losses: this.player.losses});
   },
-
+  //This page's User has eneterd a name to join the game
+  //If player1 is already taken, Join as player 2, if both are taken, alert that the game is full.
   joinGame: function(myName) {
     if(!this.player1.joined){
       this.player=this.player1;
@@ -226,7 +239,7 @@ var rps_game = {
 
   },
 
-  //from child_added, meaning on first player created in database
+  //called via Firebase on("child_added"), add's the player that has joined
   addPlayer: function(snapshot) {
     console.log("Add Player: Snapshot key = "+snapshot.key);
     if(snapshot.key==="1"){
@@ -239,7 +252,8 @@ var rps_game = {
     }
 
   },
-
+  //called from Firebase on("child_removed"), cleans up player's state
+  //sets the gameState to waitingForPlayers
   removePlayer: function(snapshot) {
     var leavingPlayer=null;
     var stayingPlayer=null;
@@ -252,14 +266,16 @@ var rps_game = {
       stayingPlayer=this.player1;
     }
 
+    //If this window is set as the other Active player
     if(this.windowMode!==windowModes.spectator) {
       var tempStr= leavingPlayer.name+" has disconnected";
       this.chat_ref.push({message: tempStr});
+      //Rebind chat_ref_delete to this player, since they are the last one, if they aren't already set to delete the chat on disconnect.
       if(this.chat_ref_delete===null) {
         this.chat_ref_delete=this.chat_ref.onDisconnect();
         this.chat_ref_delete.remove();
       }
-
+      //set player's choice to 0 in firebase.
       this.player_ref.set({name: this.player.name, choice: 0, wins: this.player.wins, losses: this.player.losses});
     }
 
@@ -276,7 +292,7 @@ var rps_game = {
     this.checkPlayerState("2", this.player2);
 
   },
-
+  //Called via Firebase .on("value"), updates that player stats
   updatePlayer: function(snapshot) {
     var val=snapshot.val();
     var tempPlayer=null;
@@ -307,7 +323,7 @@ var rps_game = {
 
 
   //called via firebase listener on(child_added) for ref(chat)
-  addChatMessage: function(message){
+  jqAddChatMessage: function(message){
     var mess=$("<p>");
     mess.html(message);
 
@@ -319,7 +335,7 @@ var rps_game = {
    
   },
 
-  //called when Send is
+  //called when Send is pressed on the page, only sends the message if that window is an active player.
   sendMessage: function(myMessage) {
     if(this.player!==null){
       var temp= this.player.name+": "+myMessage;

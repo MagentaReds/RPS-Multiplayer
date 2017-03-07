@@ -1,3 +1,4 @@
+//Firebase Config
 var config = {
   apiKey: "AIzaSyCZL3qUBNYs2yGBcIBIBSb4PjrpXWtuTDU",
   authDomain: "rps-multiplayer-a5d08.firebaseapp.com",
@@ -8,9 +9,10 @@ var config = {
 firebase.initializeApp(config);
 var database=firebase.database();
 
+//Rock, Paper, Scissorcs choices
 const choiceArray = ["None", "Rock", "Paper", "Scissors"];  //0, 1, 2 for R,P,S for choices.
 
-//my enums
+//Objects as enums, now with prebuilt ouput strings!
 const gameStates={
   waitingForPlayers: "Waiting for all players to join", 
   readyToStartGame: "Every one is here, time to start!",
